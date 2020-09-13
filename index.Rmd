@@ -1,0 +1,87 @@
+---
+title: "House Prices"
+author: "Xavier Magaña Vera"
+date: "9/12/2020"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+```
+
+## Introduction
+
+For this project I developed a Shiny App that will tell us how does the sale price of a house is influenced by the year it was built by using the AmesHousing library.
+
+This App creates a linear model and makes a prediction on the price depending on the year you set on the slider.
+
+## Process
+
+1. set the panel with the sidebar and the panel where the graph most be shown
+2. create the model
+3. create the prediction
+4. create the plot
+5. create the output so the results can be shown
+
+## Ui.R CODE
+```{r, eval=FALSE, echo=TRUE}
+library(AmesHousing)
+h <- make_ames()
+
+shinyUI(fluidPage(
+    titlePanel("Shiny in Data Science"),
+    sidebarLayout(
+        sidebarPanel(
+            h3("Control Center"),
+            sliderInput("slider1", "Year", 1872, 2010, 1872)
+        ),
+        mainPanel(
+            h3("Plot"),
+            plotOutput("plot"),
+            h2("Predicted house price:"),
+            textOutput("pred")
+        )
+    )
+))
+```
+
+## SERVER.R CODE
+```{r, eval=FALSE, echo=TRUE}
+library(AmesHousing)
+h <- make_ames()
+
+shinyServer(function(input, output) {
+  
+    model <- lm(Sale_Price~Year_Built, data = h)
+    modpred <- reactive({
+      ybinput <- input$slider1
+      predict(model, newdata = data.frame(Year_Built = ybinput))
+    })
+    output$plot <- renderPlot({
+      ybinput <- input$slider1
+      plot(h$Year_Built, h$Sale_Price, xlab = "Year Built",
+           ylab = "Sale Price")
+      abline(model, col = "blue")
+      legend(25,25,c("Prediction"))
+      points(ybinput, modpred())
+    })
+    output$pred <- renderText({
+      modpred()
+    })
+})
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
